@@ -2,61 +2,87 @@
 
 const puppeteer = require('puppeteer');
 const program = require('commander');
+const fs = require('fs');
+
+global.options = {
+	printBackground: true,
+	displayHeaderFooter: false,
+	margin: {top: 0, bottom: 0, left: 0, right: 0},
+	path: './test'
+}
+
+global.sizes = {
+	"desktop": {
+		pathSuffix: ' (desktop)',
+		scale: 0.6,
+		width: '10in',
+		height: '100in'
+	},
+	"mobile": {
+		pathSuffix: ' (mobile)',
+		scale: 0.602,
+		width: '2.46in',
+		height: '100in',
+		userAgent: "iPhone"
+	}
+}
 
 program
 	.version('0.1.0')
-	.option('-s, --size <size>', 'set PDF output size ("mobile" or "desktop")');
+	.command('webshot [url]', 'capture a URL')
+	.option('-s, --size <size>', 'set PDF output size ("mobile" or "desktop" [default])')
+	.action(function(url) {
+		let size = program.size;
+
+		if (!isValidURL(url)) {
+			console.error('Invalid URL "' + url + '". Please paste an entire URL including the "https://".');
+			return false;
+		}
+		if (!isValidSize(size)) {
+			console.error('Invalid size "' + size + '". Type "webshot --help" for help.');
+			return false;
+		}
+
+		let options = Object.assign(global.options, global.sizes[size]);
+		options.path = options.path + options.pathSuffix + ".pdf";
+
+		console.log("Generating PDF...");
+		console.log("Current directory: " + require('path').dirname(require.main.filename));
+
+		(async() => {
+			const browser = await puppeteer.launch({
+				executablePath: '/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome'
+			});
+
+			const page = await browser.newPage();
+
+			if (options.userAgent == "iPhone") {
+				await page.setUserAgent('Mozilla/5.0 (iPhone; CPU OS 11_0 like Mac OS X) AppleWebKit/604.1.25 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1');
+			}
+
+			await page.goto(url, {waitUntil: 'networkidle0'});
+			await page.emulateMedia('screen');
+			await page.pdf(options);
+
+			await browser.close();
+		})();
+	});
 
 program.parse(process.argv);
 
-var url = "https://purple.com/";
-var filename = url.split('.com/')[1].replace(/\//g, '-');
-// var filename = url.replace(/\//g, '-');
-
-console.log(filename);
-if (!filename) {
-	filename = "home";
-}
-var doMobile = false;
-
-// Desktop
-var optionsDesktop = {
-	path: 'results/page-desktop-' + filename + '.pdf',
-	printBackground: true,
-	displayHeaderFooter: false,
-	scale: 0.6,
-	width: '10in',
-	height: '100in'
-};
-
-// iPhone X Size
-var optionsMobile = {
-	path: 'results/page-mobile-' + filename + '.pdf',
-	printBackground: true,
-	displayHeaderFooter: false,
-	scale: 0.602,
-	width: '2.46in',
-	height: '100in',
-	margin: {top: 0, bottom: 0, left: 0, right: 0}
-};
-
-var options = {};
-if (doMobile) {
-	options = optionsMobile;
-	console.log("Generating Mobile PDF");
-} else {
-	options = optionsDesktop;
-	console.log("Generating Desktop PDF");
+function isValidURL(url) {
+	try {
+		new URL(url);
+		return true;
+	} catch (err) {
+		return false;
+	}
 }
 
-(async() => {
-	const browser = await puppeteer.launch({
-		executablePath: '/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome'
-	});
-	const page = await browser.newPage();
-	await page.goto(url, {waitUntil: 'networkidle0'});
-	await page.emulateMedia('screen');
-	await page.pdf(options);
-
-	await browser.close();
-})();
+function isValidSize(size) {
+	if (global.sizes[size]) {
+		return true;
+	} else {
+		return false;
+	}
+}
