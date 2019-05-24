@@ -1,5 +1,5 @@
 {
-  "name": "webpage-printer",
+  "name": "webshot",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/OnPurple/webpage-printer.git"
+    "url": "git+https://github.com/JacobBerube/webshot.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/OnPurple/webpage-printer/issues"
+    "url": "https://github.com/JacobBerube/webshot/issues"
   },
-  "homepage": "https://github.com/OnPurple/webpage-printer#readme",
+  "homepage": "https://github.com/JacobBerube/webshot#readme",
   "dependencies": {
     "commander": "^2.20.0",
     "puppeteer": "^1.13.0"
