@@ -10,4 +10,4 @@ Webshot is a CLI interface for creating perfect full-height vector PDF screensho
 Supports a `-s` argument for the output size. Options are `mobile` or `desktop`. Mobile size is an iPhone X width screen.
 
 ## Known issues
-Right now, all pages are exported as the same height which means there will be extra whitespace at the bottom of the PDF.
+Right now, there is an issue with height calculation that may cause some pages to export to the wrong height, causing overflow onto a second page or extra white space.

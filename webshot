@@ -13,16 +13,18 @@ global.options = {
 global.sizes = {
 	"desktop": {
 		pathSuffix: ' (desktop)',
-		scale: 0.6,
-		width: '10in',
-		height: '100in'
+		width: 1366,
+		height: 768
 	},
 	"mobile": {
 		pathSuffix: ' (mobile)',
-		scale: 0.602,
-		width: '2.46in',
-		height: '100in',
+		width: 375,
+		height: 812,
 		userAgent: "iPhone"
+	},
+	"test": {
+		pathSuffix: ' (test)',
+		width: 375
 	}
 }
 
@@ -68,8 +70,19 @@ program
 				await page.setUserAgent('Mozilla/5.0 (iPhone; CPU OS 11_0 like Mac OS X) AppleWebKit/604.1.25 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1');
 			}
 
-			await page.goto(url, {waitUntil: 'networkidle0'});
+			await page.setViewport({ width: options.width, height: options.height });
 			await page.emulateMedia('screen');
+			await page.goto(url, {waitUntil: 'networkidle2'});
+
+
+			let height = await page.evaluate(() => document.body.scrollHeight);
+			options.height = height;
+
+			console.log("Dimensions: " + options.width + "x" + options.height);
+
+			options.width = options.width + "px";
+			options.height = options.height + "px";
+
 			await page.pdf(options);
 
 			await browser.close();
