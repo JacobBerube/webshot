@@ -8,7 +8,6 @@ global.options = {
 	printBackground: true,
 	displayHeaderFooter: false,
 	margin: {top: 0, bottom: 0, left: 0, right: 0},
-	path: './test'
 }
 
 global.sizes = {
@@ -32,22 +31,31 @@ program
 	.command('webshot [url]', 'capture a URL')
 	.option('-s, --size <size>', 'set PDF output size ("mobile" or "desktop" [default])')
 	.action(function(url) {
-		let size = program.size;
+		var size = program.size;
 
 		if (!isValidURL(url)) {
 			console.error('Invalid URL "' + url + '". Please paste an entire URL including the "https://".');
 			return false;
+		}
+
+		if (size == undefined) {
+			size = "desktop";
 		}
 		if (!isValidSize(size)) {
 			console.error('Invalid size "' + size + '". Type "webshot --help" for help.');
 			return false;
 		}
 
+		let filename = url.split("://")[1].replace(/\//g, "-");
+		console.log(filename);
+
 		let options = Object.assign(global.options, global.sizes[size]);
-		options.path = options.path + options.pathSuffix + ".pdf";
+		options.path = process.cwd() + "/" + filename + options.pathSuffix + ".pdf";
+
+
 
 		console.log("Generating PDF...");
-		console.log("Current directory: " + require('path').dirname(require.main.filename));
+		console.log("Saving to: " + options.path);
 
 		(async() => {
 			const browser = await puppeteer.launch({
