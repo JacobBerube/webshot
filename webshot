@@ -1,0 +1,62 @@
+#!/usr/bin/env node
+
+const puppeteer = require('puppeteer');
+const program = require('commander');
+
+program
+	.version('0.1.0')
+	.option('-s, --size <size>', 'set PDF output size ("mobile" or "desktop")');
+
+program.parse(process.argv);
+
+var url = "https://purple.com/";
+var filename = url.split('.com/')[1].replace(/\//g, '-');
+// var filename = url.replace(/\//g, '-');
+
+console.log(filename);
+if (!filename) {
+	filename = "home";
+}
+var doMobile = false;
+
+// Desktop
+var optionsDesktop = {
+	path: 'results/page-desktop-' + filename + '.pdf',
+	printBackground: true,
+	displayHeaderFooter: false,
+	scale: 0.6,
+	width: '10in',
+	height: '100in'
+};
+
+// iPhone X Size
+var optionsMobile = {
+	path: 'results/page-mobile-' + filename + '.pdf',
+	printBackground: true,
+	displayHeaderFooter: false,
+	scale: 0.602,
+	width: '2.46in',
+	height: '100in',
+	margin: {top: 0, bottom: 0, left: 0, right: 0}
+};
+
+var options = {};
+if (doMobile) {
+	options = optionsMobile;
+	console.log("Generating Mobile PDF");
+} else {
+	options = optionsDesktop;
+	console.log("Generating Desktop PDF");
+}
+
+(async() => {
+	const browser = await puppeteer.launch({
+		executablePath: '/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome'
+	});
+	const page = await browser.newPage();
+	await page.goto(url, {waitUntil: 'networkidle0'});
+	await page.emulateMedia('screen');
+	await page.pdf(options);
+
+	await browser.close();
+})();
